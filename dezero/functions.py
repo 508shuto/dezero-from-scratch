@@ -118,6 +118,47 @@ class MatMul(Function):
         return gx, gW
 
 
+class Exp(Function):
+    def forward(self, x):
+        y = np.exp(x)
+        return y
+
+    def backward(self, gy):
+        y = self.outputs[0]()
+        gx = gy * y
+        return gx
+
+
+class MeanSquaredError(Function):
+    def forward(self, x0, x1):
+        diff = x0 - x1
+        y = (diff**2).sum() / len(diff)
+        return y
+
+    def backward(self, gy):
+        x0, x1 = self.inputs
+        diff = x0 - x1
+        gy = broadcast_to(gy, diff.shape)
+        gx0 = gy * diff * (2.0 / len(diff))
+        gx1 = -gx0
+        return gx0, gx1
+
+
+class Sigmoid(Function):
+    def forward(self, x):
+        # y = 1 / (1 + np.exp(-x))
+        y = np.tanh(x * 0.5) * 0.5 + 0.5  # Better implementation
+        # y = 1 / (1 + xp.exp(-x))
+        # y = xp.tanh(x * 0.5) * 0.5 + 0.5  # Better implementation
+        return y
+
+    def backward(self, gy):
+        y = self.outputs[0]()
+        # TODO: sigmoidの微分の確認
+        gx = gy * y * (1 - y)
+        return gx
+
+
 def sin(x):
     return Sin()(x)
 
@@ -158,3 +199,32 @@ def sum_to(x, shape):
 
 def matmul(x, W):
     return MatMul()(x, W)
+
+
+def mean_squared_error(x0, x1):
+    return MeanSquaredError()(x0, x1)
+
+
+def exp(x):
+    return Exp()(x)
+
+
+def linear_simple(x, W, b=None):
+    x, W = as_variable(x), as_variable(W)
+    t = matmul(x, W)
+    if b is None:
+        return t
+
+    y = t + b
+    t.data = None  # tのデータを消去
+    return y
+
+
+def sigmoid_simple(x):
+    x = as_variable(x)
+    y = 1 / (1 + exp(-x))
+    return y
+
+
+def sigmoid(x):
+    return Sigmoid()(x)
