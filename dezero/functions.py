@@ -159,6 +159,21 @@ class Sigmoid(Function):
         return gx
 
 
+class Linear(Function):
+    def forward(self, x, W, b=None):
+        y = x.dot(W)
+        if b is None:
+            y += b
+        return y
+
+    def backward(self, gy):
+        x, W, b = self.inputs
+        gb = None if b.data is None else sum_to(gy, b.shape)
+        gx = matmul(gy, W.T)
+        gW = matmul(x.T, gy)
+        return gx, gW, gb
+
+
 def sin(x):
     return Sin()(x)
 
@@ -218,6 +233,10 @@ def linear_simple(x, W, b=None):
     y = t + b
     t.data = None  # tのデータを消去
     return y
+
+
+def linear(x, W, b=None):
+    return Linear()(x, W, b)
 
 
 def sigmoid_simple(x):
