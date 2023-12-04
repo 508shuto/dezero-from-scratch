@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "dezero-from-scratch"
+version = "0.1.0"
+description = "This repo is the log for scratch making Dezero."
+authors = ["508shuto <shuto508@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.26.2"
+matplotlib = "^3.8.2"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
